@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — CronAI{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-100">Scheduled Jobs</h1>
+            <p class="mt-1 text-sm text-slate-400">{{ jobs|length }} job{{ 's' if jobs|length != 1 else '' }} configured</p>
+        </div>
+        <a href="/jobs/new"
+            class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 hover:from-brand-500 hover:to-brand-400 transition-all">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            New Job
+        </a>
+    </div>
+
+    <!-- Jobs list -->
+    {% if jobs %}
+    <div class="space-y-3" id="jobs-list">
+        {% for job in jobs %}
+        <div class="glass-card p-5 hover:border-slate-700/30 transition-all group" id="job-row-{{ job.id }}">
+            <div class="flex items-start justify-between gap-4">
+                <!-- Job info -->
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-3">
+                        <a href="/jobs/{{ job.id }}" class="text-base font-semibold text-slate-100 hover:text-brand-400 transition-colors truncate">
+                            {{ job.name }}
+                        </a>
+
+                        <!-- Status badge -->
+                        {% if job._last_status == 'success' %}
+                        <span class="badge badge-success">
+                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                            Success
+                        </span>
+                        {% elif job._last_status == 'failure' %}
+                        <span class="badge badge-failure">
+                            <span class="h-1.5 w-1.5 rounded-full bg-red-400"></span>
+                            Failed
+                        </span>
+                        {% elif job._last_status == 'in_progress' or job._last_status == 'queued' %}
+                        <span class="badge badge-pending">
+                            <span class="h-1.5 w-1.5 rounded-full bg-yellow-400 pulse-dot"></span>
+                            Running
+                        </span>
+                        {% elif job._last_status == 'no_runs' %}
+                        <span class="badge badge-neutral">No runs</span>
+                        {% else %}
+                        <span class="badge badge-neutral">{{ job._last_status or 'Unknown' }}</span>
+                        {% endif %}
+
+                        <!-- Enabled/Disabled -->
+                        {% if not job.is_enabled %}
+                        <span class="badge badge-neutral">Disabled</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="mt-2 flex items-center gap-4 text-xs text-slate-500">
+                        <span class="flex items-center gap-1.5">
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {{ job.schedule_display or job.schedule_cron_utc }}
+                        </span>
+                        <span class="flex items-center gap-1.5">
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                            </svg>
+                            {{ job.llm_provider }} / {{ job.llm_model }}
+                        </span>
+                        <span class="flex items-center gap-1.5">
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                            </svg>
+                            {{ job.recipient_email }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                    <!-- Run Now -->
+                    <form method="post" action="/jobs/{{ job.id }}/run" class="inline">
+                        <button type="submit" title="Run Now"
+                            class="rounded-lg p-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+                            </svg>
+                        </button>
+                    </form>
+
+                    <!-- Toggle -->
+                    <form method="post" action="/jobs/{{ job.id }}/toggle" class="inline">
+                        <button type="submit" title="{{ 'Disable' if job.is_enabled else 'Enable' }}"
+                            class="toggle-switch {{ 'active' if job.is_enabled else 'inactive' }}">
+                        </button>
+                    </form>
+
+                    <!-- Edit -->
+                    <a href="/jobs/{{ job.id }}/edit" title="Edit"
+                        class="rounded-lg p-2 text-slate-400 hover:text-brand-400 hover:bg-brand-500/10 transition-colors">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                        </svg>
+                    </a>
+
+                    <!-- Delete -->
+                    <form method="post" action="/jobs/{{ job.id }}/delete" class="inline"
+                          onsubmit="return confirm('Delete job \'{{ job.name }}\'?')">
+                        <button type="submit" title="Delete"
+                            class="rounded-lg p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty state -->
+    <div class="glass-card p-12 text-center">
+        <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-800/60">
+            <svg class="h-8 w-8 text-slate-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-slate-300">No jobs yet</h3>
+        <p class="mt-1 text-sm text-slate-500">Create your first AI-powered scheduled task</p>
+        <a href="/jobs/new"
+            class="mt-6 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 transition-all">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Create Job
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

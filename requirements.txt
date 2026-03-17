@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+jinja2
+python-multipart
+python-dotenv
+requests
+itsdangerous
+google-genai
+openai
+pynacl
+pytz

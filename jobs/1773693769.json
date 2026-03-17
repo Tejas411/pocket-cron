@@ -1,0 +1,16 @@
+{
+  "id": "1773693769",
+  "name": "Daily PM case study",
+  "prompt": "Give me a real world product management case study which involves product strategy.",
+  "schedule_cron_utc": "30 3 * * *",
+  "schedule_display": "9:00 AM IST (3:30 AM UTC)",
+  "timezone": "Asia/Kolkata",
+  "llm_provider": "gemini",
+  "llm_model": "gemini-2.0-flash",
+  "use_web_search": true,
+  "search_query_prompt": "latest and top product management case study",
+  "recipient_email": "tejas.kolhe411@gmail.com",
+  "email_subject_template": "PM case study for today",
+  "is_enabled": true,
+  "created_at": "2026-03-17T02:12:49.887967"
+}

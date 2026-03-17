@@ -1,0 +1,23 @@
+{% if status == 'success' %}
+<span class="badge badge-success">
+    <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+    Success
+</span>
+{% elif status == 'failure' %}
+<span class="badge badge-failure">
+    <span class="h-1.5 w-1.5 rounded-full bg-red-400"></span>
+    Failed
+</span>
+{% elif status == 'in_progress' or status == 'queued' %}
+<span class="badge badge-pending">
+    <span class="h-1.5 w-1.5 rounded-full bg-yellow-400 pulse-dot"></span>
+    Running
+</span>
+{% elif status == 'triggered' %}
+<span class="badge badge-pending">
+    <span class="h-1.5 w-1.5 rounded-full bg-yellow-400 pulse-dot"></span>
+    Triggered
+</span>
+{% else %}
+<span class="badge badge-neutral">{{ status or 'Unknown' }}</span>
+{% endif %}

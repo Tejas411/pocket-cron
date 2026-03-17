@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Run History — CronAI{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <div>
+        <h1 class="text-2xl font-bold text-slate-100">Run History</h1>
+        <p class="mt-1 text-sm text-slate-400">All job executions across GitHub Actions</p>
+    </div>
+
+    {% if runs %}
+    <div class="glass-card p-5">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+                <thead>
+                    <tr class="border-b border-slate-700/50">
+                        <th class="pb-3 text-slate-500 font-medium">Job</th>
+                        <th class="pb-3 text-slate-500 font-medium">Status</th>
+                        <th class="pb-3 text-slate-500 font-medium">Started</th>
+                        <th class="pb-3 text-slate-500 font-medium">Trigger</th>
+                        <th class="pb-3 text-slate-500 font-medium"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/50">
+                    {% for run in runs %}
+                    <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3">
+                            <a href="/jobs/{{ run._job_id }}" class="text-slate-200 hover:text-brand-400 font-medium transition-colors">
+                                {{ run._job_name }}
+                            </a>
+                        </td>
+                        <td class="py-3">
+                            {% if run.conclusion == 'success' %}
+                            <span class="badge badge-success">
+                                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                                Success
+                            </span>
+                            {% elif run.conclusion == 'failure' %}
+                            <span class="badge badge-failure">
+                                <span class="h-1.5 w-1.5 rounded-full bg-red-400"></span>
+                                Failed
+                            </span>
+                            {% elif run.status == 'in_progress' or run.status == 'queued' %}
+                            <span class="badge badge-pending">
+                                <span class="h-1.5 w-1.5 rounded-full bg-yellow-400 pulse-dot"></span>
+                                Running
+                            </span>
+                            {% elif run.conclusion == 'cancelled' %}
+                            <span class="badge badge-neutral">Cancelled</span>
+                            {% else %}
+                            <span class="badge badge-neutral">{{ run.conclusion or run.status or 'Unknown' }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 text-slate-300">{{ run.created_at[:19].replace('T', ' ') if run.created_at else '—' }} UTC</td>
+                        <td class="py-3 text-slate-400">
+                            {% if run.event == 'schedule' %}
+                            <span class="flex items-center gap-1.5">
+                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Scheduled
+                            </span>
+                            {% elif run.event == 'workflow_dispatch' %}
+                            <span class="flex items-center gap-1.5">
+                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+                                </svg>
+                                Manual
+                            </span>
+                            {% else %}
+                            {{ run.event or 'Unknown' }}
+                            {% endif %}
+                        </td>
+                        <td class="py-3">
+                            <a href="{{ run.html_url }}" target="_blank"
+                                class="text-brand-400 hover:text-brand-300 text-xs">
+                                View →
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="glass-card p-12 text-center">
+        <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-800/60">
+            <svg class="h-8 w-8 text-slate-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
+            </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-slate-300">No runs yet</h3>
+        <p class="mt-1 text-sm text-slate-500">Create a job and click "Run Now" to see execution history here</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

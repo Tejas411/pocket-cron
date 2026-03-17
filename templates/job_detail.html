@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block title %}{{ job.name }} — CronAI{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex items-start justify-between">
+        <div>
+            <a href="/" class="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-200 transition-colors mb-3">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                </svg>
+                Dashboard
+            </a>
+            <h1 class="text-2xl font-bold text-slate-100">{{ job.name }}</h1>
+            <div class="mt-2 flex items-center gap-3">
+                {% if job.is_enabled %}
+                <span class="badge badge-success">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                    Enabled
+                </span>
+                {% else %}
+                <span class="badge badge-neutral">Disabled</span>
+                {% endif %}
+                <span class="text-sm text-slate-500">{{ job.schedule_display or job.schedule_cron_utc }}</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <form method="post" action="/jobs/{{ job.id }}/run" class="inline">
+                <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-lg bg-emerald-600/20 border border-emerald-500/30 px-4 py-2 text-sm font-medium text-emerald-400 hover:bg-emerald-600/30 transition-colors">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+                    </svg>
+                    Run Now
+                </button>
+            </form>
+            <a href="/jobs/{{ job.id }}/edit"
+                class="inline-flex items-center gap-2 rounded-lg bg-slate-800 border border-slate-700/60 px-4 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700/60 transition-colors">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
+                </svg>
+                Edit
+            </a>
+        </div>
+    </div>
+
+    <!-- Job Config -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="glass-card p-5">
+            <h3 class="text-sm font-medium text-slate-400 mb-3">Configuration</h3>
+            <dl class="space-y-3 text-sm">
+                <div class="flex justify-between">
+                    <dt class="text-slate-500">Provider</dt>
+                    <dd class="text-slate-200 font-mono">{{ job.llm_provider }} / {{ job.llm_model }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-slate-500">Web Search</dt>
+                    <dd class="text-slate-200">{{ '✓ Enabled' if job.use_web_search else '✗ Disabled' }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-slate-500">Recipient</dt>
+                    <dd class="text-slate-200">{{ job.recipient_email }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-slate-500">Timezone</dt>
+                    <dd class="text-slate-200">{{ job.timezone }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-slate-500">Created</dt>
+                    <dd class="text-slate-200">{{ job.created_at[:10] if job.created_at else 'Unknown' }}</dd>
+                </div>
+            </dl>
+        </div>
+
+        <div class="glass-card p-5">
+            <h3 class="text-sm font-medium text-slate-400 mb-3">Prompt</h3>
+            <pre class="text-sm text-slate-300 whitespace-pre-wrap font-mono bg-slate-800/40 rounded-lg p-3 max-h-48 overflow-auto">{{ job.prompt }}</pre>
+        </div>
+    </div>
+
+    <!-- Run History -->
+    <div class="glass-card p-5">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-base font-semibold text-slate-200">Run History</h3>
+            <span class="text-xs text-slate-500">From GitHub Actions</span>
+        </div>
+
+        {% if runs %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+                <thead>
+                    <tr class="border-b border-slate-700/50">
+                        <th class="pb-3 text-slate-500 font-medium">Status</th>
+                        <th class="pb-3 text-slate-500 font-medium">Started</th>
+                        <th class="pb-3 text-slate-500 font-medium">Duration</th>
+                        <th class="pb-3 text-slate-500 font-medium">Trigger</th>
+                        <th class="pb-3 text-slate-500 font-medium"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/50">
+                    {% for run in runs %}
+                    <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3">
+                            {% if run.conclusion == 'success' %}
+                            <span class="badge badge-success">
+                                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                                Success
+                            </span>
+                            {% elif run.conclusion == 'failure' %}
+                            <span class="badge badge-failure">
+                                <span class="h-1.5 w-1.5 rounded-full bg-red-400"></span>
+                                Failed
+                            </span>
+                            {% elif run.status == 'in_progress' or run.status == 'queued' %}
+                            <span class="badge badge-pending">
+                                <span class="h-1.5 w-1.5 rounded-full bg-yellow-400 pulse-dot"></span>
+                                Running
+                            </span>
+                            {% elif run.conclusion == 'cancelled' %}
+                            <span class="badge badge-neutral">Cancelled</span>
+                            {% else %}
+                            <span class="badge badge-neutral">{{ run.conclusion or run.status or 'Unknown' }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 text-slate-300">{{ run.created_at[:19].replace('T', ' ') if run.created_at else '—' }} UTC</td>
+                        <td class="py-3 text-slate-400">
+                            {% if run.updated_at and run.created_at %}
+                                —
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td class="py-3 text-slate-400">
+                            {% if run.event == 'schedule' %}
+                            <span class="flex items-center gap-1.5">
+                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Scheduled
+                            </span>
+                            {% elif run.event == 'workflow_dispatch' %}
+                            <span class="flex items-center gap-1.5">
+                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+                                </svg>
+                                Manual
+                            </span>
+                            {% else %}
+                            {{ run.event or 'Unknown' }}
+                            {% endif %}
+                        </td>
+                        <td class="py-3">
+                            <a href="{{ run.html_url }}" target="_blank"
+                                class="text-brand-400 hover:text-brand-300 text-xs">
+                                View on GitHub →
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-8">
+            <p class="text-slate-500 text-sm">No runs recorded yet.</p>
+            <p class="text-slate-600 text-xs mt-1">Run history is fetched live from GitHub Actions.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

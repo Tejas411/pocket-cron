@@ -1,0 +1,21 @@
+<div class="glass-card p-5 hover:border-slate-700/30 transition-all group" id="job-row-{{ job.id }}">
+    <div class="flex items-start justify-between gap-4">
+        <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-3">
+                <a href="/jobs/{{ job.id }}" class="text-base font-semibold text-slate-100 hover:text-brand-400 transition-colors truncate">
+                    {{ job.name }}
+                </a>
+                {% if job._last_status == 'success' %}
+                <span class="badge badge-success"><span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>Success</span>
+                {% elif job._last_status == 'failure' %}
+                <span class="badge badge-failure"><span class="h-1.5 w-1.5 rounded-full bg-red-400"></span>Failed</span>
+                {% elif job._last_status == 'in_progress' %}
+                <span class="badge badge-pending"><span class="h-1.5 w-1.5 rounded-full bg-yellow-400 pulse-dot"></span>Running</span>
+                {% else %}
+                <span class="badge badge-neutral">{{ job._last_status or 'No runs' }}</span>
+                {% endif %}
+            </div>
+            <p class="mt-1.5 text-xs text-slate-500">{{ job.schedule_display or job.schedule_cron_utc }}</p>
+        </div>
+    </div>
+</div>
