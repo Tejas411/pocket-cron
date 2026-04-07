@@ -123,16 +123,16 @@
                         <label for="llm_provider" class="block text-sm font-medium text-slate-300 mb-1.5">LLM Provider</label>
                         <select id="llm_provider" name="llm_provider"
                             class="w-full rounded-lg border border-slate-700/60 bg-slate-800/60 px-4 py-2.5 text-sm text-slate-100 focus:border-brand-500 focus:outline-none">
-                            <option value="gemini" {{ 'selected' if job and job.llm_provider == 'gemini' else '' }}>Gemini</option>
+                            <option value="anthropic" {{ 'selected' if (not job) or job.llm_provider == 'anthropic' else '' }}>Anthropic</option>
                             <option value="openai" {{ 'selected' if job and job.llm_provider == 'openai' else '' }}>OpenAI</option>
                         </select>
                     </div>
                     <div>
                         <label for="llm_model" class="block text-sm font-medium text-slate-300 mb-1.5">Model</label>
                         <input type="text" id="llm_model" name="llm_model"
-                            value="{{ job.llm_model if job else 'gemini-2.0-flash' }}"
+                            value="{{ job.llm_model if job else 'claude-sonnet-4-6' }}"
                             class="w-full rounded-lg border border-slate-700/60 bg-slate-800/60 px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-brand-500 focus:outline-none font-mono"
-                            placeholder="gemini-2.0-flash">
+                            placeholder="claude-sonnet-4-6">
                     </div>
                 </div>
 

@@ -23,7 +23,7 @@ def generate_workflow_yaml(job: dict) -> str:
   workflow_dispatch:"""
 
     # Determine which pip packages the runner needs
-    pip_packages = ["google-genai", "openai", "requests"]
+    pip_packages = ["anthropic", "openai", "requests", "pynacl"]
 
     yaml = f"""name: "CronJob - {job_name}"
 
@@ -47,10 +47,12 @@ jobs:
       - name: Run job
         run: python runner.py {job_id}
         env:
-          GEMINI_API_KEY: ${{{{ secrets.GEMINI_API_KEY }}}}
+          ANTHROPIC_API_KEY: ${{{{ secrets.ANTHROPIC_API_KEY }}}}
           OPENAI_API_KEY: ${{{{ secrets.OPENAI_API_KEY }}}}
           TAVILY_API_KEY: ${{{{ secrets.TAVILY_API_KEY }}}}
           GMAIL_ADDRESS: ${{{{ secrets.GMAIL_ADDRESS }}}}
           GMAIL_APP_PASSWORD: ${{{{ secrets.GMAIL_APP_PASSWORD }}}}
+          GITHUB_PAT: ${{{{ secrets.GH_PAT }}}}
+          GITHUB_REPO: ${{{{ secrets.GH_REPO }}}}
 """
     return yaml

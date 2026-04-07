@@ -178,8 +178,8 @@ async def create_job(
     schedule_cron_utc: str = Form(...),
     schedule_display: str = Form(""),
     timezone: str = Form("UTC"),
-    llm_provider: str = Form("gemini"),
-    llm_model: str = Form("gemini-2.0-flash"),
+    llm_provider: str = Form("anthropic"),
+    llm_model: str = Form("claude-sonnet-4-6"),
     use_web_search: bool = Form(False),
     search_query_prompt: str = Form(""),
     recipient_email: str = Form(...),
@@ -275,8 +275,8 @@ async def update_job(
     schedule_cron_utc: str = Form(...),
     schedule_display: str = Form(""),
     timezone: str = Form("UTC"),
-    llm_provider: str = Form("gemini"),
-    llm_model: str = Form("gemini-2.0-flash"),
+    llm_provider: str = Form("anthropic"),
+    llm_model: str = Form("claude-sonnet-4-6"),
     use_web_search: bool = Form(False),
     search_query_prompt: str = Form(""),
     recipient_email: str = Form(...),
@@ -472,7 +472,7 @@ async def save_settings(
     # Push API keys to GitHub Actions Secrets
     secrets_to_push = {}
     if anthropic_api_key:
-        secrets_to_push["GEMINI_API_KEY"] = anthropic_api_key
+        secrets_to_push["ANTHROPIC_API_KEY"] = anthropic_api_key
     if openai_api_key:
         secrets_to_push["OPENAI_API_KEY"] = openai_api_key
     if tavily_api_key:

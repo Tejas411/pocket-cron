@@ -51,7 +51,7 @@ Create a [Personal Access Token](https://github.com/settings/tokens) with these 
 ### 5. Run
 
 ```bash
-uvicorn main:app --reload --port 8000
+python -m uvicorn main:app --reload --port 8000
 ```
 
 Visit [http://localhost:8000](http://localhost:8000) and log in.
