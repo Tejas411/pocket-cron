@@ -74,7 +74,23 @@ def main():
     result = run_prompt(provider, model, prompt, search_context)
     print(f"  Response: {len(result)} characters")
 
-    # 5. Send email
+    # 5. Save output to outputs/<job_id>_<timestamp>.json
+    outputs_dir = os.path.join(os.path.dirname(__file__), "outputs")
+    os.makedirs(outputs_dir, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_path = os.path.join(outputs_dir, f"{job_id}_{timestamp}.json")
+    with open(output_path, "w") as f:
+        json.dump({
+            "job_id": job_id,
+            "job_name": job.get("name"),
+            "generated_at": datetime.now().isoformat(),
+            "subject": subject,
+            "recipient": job.get("recipient_email"),
+            "output": result,
+        }, f, indent=2)
+    print(f"💾 Output saved to {output_path}")
+
+    # 6. Send email
     recipient = job.get("recipient_email", "")
     if not recipient:
         print("✗ No recipient email configured")
@@ -83,7 +99,7 @@ def main():
     print(f"📧 Sending to {recipient}...")
     send_email(recipient, subject, result)
 
-    # 6. Done
+    # 7. Done
     print(f"✓ Job {job_id} completed successfully")
 
 
