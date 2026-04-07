@@ -1,6 +1,6 @@
 """
 LLM abstraction layer.
-Routes prompts to Gemini or OpenAI based on provider config.
+Routes prompts to Anthropic or OpenAI based on provider config.
 """
 
 import os
@@ -17,7 +17,7 @@ def run_prompt(
 
     Args:
         provider: "anthropic" or "openai"
-        model: Model name (e.g. "claude-sonnet-4-20250514", "gpt-4o")
+        model: Model name (e.g. "claude-sonnet-4-6", "gpt-4o")
         prompt: The user prompt
         search_context: Optional web search results to prepend
 
@@ -33,27 +33,28 @@ def run_prompt(
             f"{prompt}"
         )
 
-    if provider == "gemini":
-        return _call_gemini(model, full_prompt)
+    if provider == "anthropic":
+        return _call_anthropic(model, full_prompt)
     elif provider == "openai":
         return _call_openai(model, full_prompt)
     else:
         raise ValueError(f"Unknown LLM provider: {provider}")
 
 
-def _call_gemini(model: str, prompt: str) -> str:
-    """Call the Google Gemini API."""
-    from google import genai
+def _call_anthropic(model: str, prompt: str) -> str:
+    """Call the Anthropic API."""
+    import anthropic
 
-    api_key = os.environ.get("GEMINI_API_KEY", "")
-    client = genai.Client(api_key=api_key)
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    client = anthropic.Anthropic(api_key=api_key)
 
-    response = client.models.generate_content(
+    message = client.messages.create(
         model=model,
-        contents=prompt,
+        max_tokens=4096,
+        messages=[{"role": "user", "content": prompt}],
     )
 
-    return response.text or ""
+    return message.content[0].text if message.content else ""
 
 
 def _call_openai(model: str, prompt: str) -> str:
