@@ -74,21 +74,28 @@ def main():
     result = run_prompt(provider, model, prompt, search_context)
     print(f"  Response: {len(result)} characters")
 
-    # 5. Save output to outputs/<job_id>_<timestamp>.json
-    outputs_dir = os.path.join(os.path.dirname(__file__), "outputs")
-    os.makedirs(outputs_dir, exist_ok=True)
+    # 5. Save output to outputs/<job_id>_<timestamp>.json and push to GitHub
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_path = os.path.join(outputs_dir, f"{job_id}_{timestamp}.json")
-    with open(output_path, "w") as f:
-        json.dump({
-            "job_id": job_id,
-            "job_name": job.get("name"),
-            "generated_at": datetime.now().isoformat(),
-            "subject": subject,
-            "recipient": job.get("recipient_email"),
-            "output": result,
-        }, f, indent=2)
-    print(f"💾 Output saved to {output_path}")
+    output_data = json.dumps({
+        "job_id": job_id,
+        "job_name": job.get("name"),
+        "generated_at": datetime.now().isoformat(),
+        "subject": subject,
+        "recipient": job.get("recipient_email"),
+        "output": result,
+    }, indent=2)
+
+    output_filename = f"outputs/{job_id}_{timestamp}.json"
+    try:
+        import github_client
+        github_client.push_file(
+            output_filename,
+            output_data,
+            f"Output: {job.get('name')} [{timestamp}]",
+        )
+        print(f"💾 Output pushed to repo: {output_filename}")
+    except Exception as e:
+        print(f"  Warning: could not push output to GitHub: {e}")
 
     # 6. Send email
     recipient = job.get("recipient_email", "")
