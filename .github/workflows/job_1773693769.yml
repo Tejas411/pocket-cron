@@ -28,3 +28,5 @@ jobs:
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
           GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          GITHUB_PAT: ${{ secrets.GH_PAT }}
+          GITHUB_REPO: ${{ secrets.GH_REPO }}
