@@ -5,7 +5,7 @@ python-multipart
 python-dotenv
 requests
 itsdangerous
-google-genai
+anthropic
 openai
 pynacl
 pytz
